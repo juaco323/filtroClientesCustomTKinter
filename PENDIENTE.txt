@@ -1,0 +1,2 @@
+PENDIENTE
+formato agregar cliente (fecha: 00-00-0000) que el cliente al agregar la fecha solamente tenga que escribir los números correspondientes, no ingresar manualmente el guion.

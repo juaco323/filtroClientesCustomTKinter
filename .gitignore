@@ -1,0 +1,21 @@
+# Build
+build/
+dist/
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Database
+*.db
+sistema_isp_db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
