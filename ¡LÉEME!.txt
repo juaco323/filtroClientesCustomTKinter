@@ -1,0 +1,17 @@
+¡LÉEME!
+
+Pasos para ejecutar la aplicación:
+
+1. Abrir archivo llamado "BuscadorDRECH.exe"
+2. Presionar botón "Seleccionar excel", luego buscar en tus carpetas locales el archivo en cuestión.
+3. Presionar botón "Procesar y actualizar BD"
+4. Ve a la barra de búsqueda según nombre o IP
+5. ¡Ya estás listo para poder filtrar clientes!
+
+Observaciones: Al hacer doble click en una IP ya sea de antena o router, este redirige a su página web en cuestión.
+
+Gracias Rodrigo por darme esta oportunidad para poder desarrollar software acorde a sus necesidades y poder expandir mi conocimiento.
+Si le gustó mi trabajo, le agradecería que pueda recomendarme, ya sea a colegas o pymes :)
+
+Un gusto
+Joaquín F.
