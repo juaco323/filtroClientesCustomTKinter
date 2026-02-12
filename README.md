@@ -8,14 +8,14 @@ Sistema de gestión de clientes ISP con interfaz gráfica moderna usando CustomT
 
 ## Características
 
-- ✅ Cargar datos desde archivos Excel (.xlsx)
-- ✅ Búsqueda por nombre de cliente, IP o ubicación
-- ✅ **Sistema de filtros avanzados** por Ubicación y Zona
-- ✅ Hipervínculos clickeables para IP Antena e IP Router
-- ✅ **Validación de IPs** antes de abrir en navegador
-- ✅ Base de datos SQLite local
-- ✅ Interfaz moderna con tema oscuro
-- ✅ Carga automática de ubicaciones y zonas al procesar Excel
+- Cargar datos desde archivos Excel (.xlsx)
+- Búsqueda por nombre de cliente, IP o ubicación
+- **Sistema de filtros avanzados** por Ubicación y Zona
+- Hipervínculos clickeables para IP Antena e IP Router
+- **Validación de IPs** antes de abrir en navegador
+- Base de datos SQLite local
+- Interfaz moderna con tema oscuro
+- Carga automática de ubicaciones y zonas al procesar Excel
 
 ## Capturas
 
