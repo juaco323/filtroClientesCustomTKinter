@@ -81,7 +81,7 @@ class BuscadorDRECH(ctk.CTk):
         # Frame lateral
         self.sidebar = ctk.CTkFrame(self, width=250, corner_radius=0)
         self.sidebar.grid(row=0, column=0, sticky="nsew")
-        self.sidebar.grid_rowconfigure(7, weight=1)
+        self.sidebar.grid_rowconfigure(8, weight=1)  # Frame de zonas expandible
         
         # Titulo sidebar
         self.logo_label = ctk.CTkLabel(self.sidebar, text="Carga de Datos", 
@@ -118,25 +118,43 @@ class BuscadorDRECH(ctk.CTk):
         
         # Separador
         self.separator = ctk.CTkFrame(self.sidebar, height=2, fg_color="gray50")
-        self.separator.grid(row=6, column=0, padx=20, pady=20, sticky="ew")
+        self.separator.grid(row=6, column=0, padx=20, pady=15, sticky="ew")
+        
+        # Titulo Zonas
+        self.zonas_titulo = ctk.CTkLabel(self.sidebar, text="📍 Zonas",
+                                          font=ctk.CTkFont(size=16, weight="bold"))
+        self.zonas_titulo.grid(row=7, column=0, padx=20, pady=(5, 10))
+        
+        # Frame scrollable para zonas
+        self.zonas_frame = ctk.CTkScrollableFrame(self.sidebar, width=200, height=150,
+                                                   fg_color="transparent")
+        self.zonas_frame.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="nsew")
+        
+        # Diccionario para guardar los botones de zonas
+        self.zonas_buttons = {}
+        
+        # Separador 2
+        self.separator2 = ctk.CTkFrame(self.sidebar, height=2, fg_color="gray50")
+        self.separator2.grid(row=9, column=0, padx=20, pady=10, sticky="ew")
         
         # Contador clientes
         self.clientes_label = ctk.CTkLabel(self.sidebar, text="Clientes Totales",
                                             font=ctk.CTkFont(size=14))
-        self.clientes_label.grid(row=8, column=0, padx=20, pady=(10, 0))
+        self.clientes_label.grid(row=10, column=0, padx=20, pady=(10, 0))
         
         self.contador_label = ctk.CTkLabel(self.sidebar, text="0",
                                             font=ctk.CTkFont(size=36, weight="bold"))
-        self.contador_label.grid(row=9, column=0, padx=20, pady=(0, 10))
+        self.contador_label.grid(row=11, column=0, padx=20, pady=(0, 10))
         
         # Boton Modificar datos BD (en la parte inferior)
         self.btn_admin = ctk.CTkButton(self.sidebar, text="📝 Modificar datos BD",
                                         command=self.toggle_modo_admin,
                                         fg_color="#6c757d", hover_color="#5a6268",
                                         height=40)
-        self.btn_admin.grid(row=10, column=0, padx=20, pady=(10, 20), sticky="s")
+        self.btn_admin.grid(row=12, column=0, padx=20, pady=(10, 20), sticky="s")
         
         self.archivo_seleccionado = None
+        self.zona_seleccionada = None
     
     def crear_panel_principal(self):
         # Frame principal
@@ -293,6 +311,10 @@ class BuscadorDRECH(ctk.CTk):
             self.titulo.configure(text="Administracion de Datos")
             # Mostrar columna ID
             self.tabla.column("id", width=50, stretch=True)
+            # Ocultar seccion de zonas
+            self.zonas_titulo.grid_remove()
+            self.zonas_frame.grid_remove()
+            self.separator2.grid_remove()
             # Mostrar todos los clientes
             self.mostrar_todos_clientes()
         else:
@@ -302,6 +324,10 @@ class BuscadorDRECH(ctk.CTk):
             self.help_message.configure(text="")
             # Ocultar columna ID
             self.tabla.column("id", width=0, stretch=False)
+            # Mostrar seccion de zonas
+            self.zonas_titulo.grid()
+            self.zonas_frame.grid()
+            self.separator2.grid()
             # Limpiar tabla
             for item in self.tabla.get_children():
                 self.tabla.delete(item)
@@ -703,10 +729,112 @@ class BuscadorDRECH(ctk.CTk):
                 total = pd.read_sql_query("SELECT COUNT(*) as total FROM clientes", conn)['total'][0]
                 self.contador_label.configure(text=str(total))
                 conn.close()
+                # Actualizar zonas tambien
+                self.actualizar_zonas()
             except:
                 self.contador_label.configure(text="0")
         else:
             self.contador_label.configure(text="0")
+            self.actualizar_zonas()
+    
+    def actualizar_zonas(self):
+        """Actualizar la lista de zonas con sus cantidades de clientes"""
+        # Limpiar botones existentes
+        for widget in self.zonas_frame.winfo_children():
+            widget.destroy()
+        self.zonas_buttons = {}
+        
+        if not os.path.exists(DB_FILE):
+            return
+        
+        try:
+            conn = sqlite3.connect(DB_FILE)
+            # Obtener zonas y sus cantidades
+            df = pd.read_sql_query("""
+                SELECT zona, COUNT(*) as cantidad 
+                FROM clientes 
+                WHERE zona IS NOT NULL AND zona != ''
+                GROUP BY zona 
+                ORDER BY zona
+            """, conn)
+            conn.close()
+            
+            for _, row in df.iterrows():
+                zona = row['zona']
+                cantidad = row['cantidad']
+                
+                # Crear boton para cada zona
+                btn = ctk.CTkButton(self.zonas_frame, 
+                                    text=f"{zona} ({cantidad})",
+                                    command=lambda z=zona: self.filtrar_por_zona(z),
+                                    fg_color="transparent", hover_color="#3a3a3a",
+                                    height=28, anchor="w",
+                                    font=ctk.CTkFont(size=12))
+                btn.pack(fill="x", pady=1, padx=5)
+                self.zonas_buttons[zona] = btn
+                
+        except Exception as e:
+            pass
+    
+    def filtrar_por_zona(self, zona):
+        """Filtrar y mostrar clientes de una zona especifica"""
+        self.zona_seleccionada = zona
+        
+        # Resaltar boton seleccionado
+        for z, btn in self.zonas_buttons.items():
+            if z == zona:
+                btn.configure(fg_color="#1f6aa5")
+            else:
+                btn.configure(fg_color="transparent")
+        
+        # Limpiar tabla
+        for item in self.tabla.get_children():
+            self.tabla.delete(item)
+        
+        if not os.path.exists(DB_FILE):
+            return
+        
+        try:
+            conn = sqlite3.connect(DB_FILE)
+            df = pd.read_sql_query(f"""
+                SELECT rowid as id, * FROM clientes 
+                WHERE zona = ?
+            """, conn, params=(zona,))
+            conn.close()
+            
+            # Eliminar columnas unnamed
+            df = df.loc[:, ~df.columns.str.contains('^unnamed', case=False)]
+            
+            for _, row in df.iterrows():
+                valores = []
+                for col in ["id", "cliente", "ip_antena", "ip_router", "ubicacion", "zona", "plan", "fecha_registro"]:
+                    if col in df.columns:
+                        val = row[col] if pd.notnull(row[col]) else ""
+                        if col in ["ip_antena", "ip_router"] and val and str(val).strip():
+                            val = f"🔗 {val}"
+                        valores.append(val)
+                    else:
+                        valores.append("")
+                self.tabla.insert("", "end", values=valores, tags=("link",))
+            
+            # Mostrar mensaje de filtro activo
+            self.help_message.configure(text=f"📍 Mostrando zona: {zona} ({len(df)} clientes)")
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al filtrar: {e}")
+    
+    def quitar_filtro_zona(self):
+        """Quitar filtro de zona y limpiar tabla"""
+        self.zona_seleccionada = None
+        
+        # Quitar resaltado de botones
+        for btn in self.zonas_buttons.values():
+            btn.configure(fg_color="transparent")
+        
+        # Limpiar tabla y mensaje
+        for item in self.tabla.get_children():
+            self.tabla.delete(item)
+        self.help_message.configure(text="")
     
     def buscar(self):
         query = self.search_entry.get().strip()
